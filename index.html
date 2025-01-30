@@ -91,74 +91,104 @@
 
     /********************************************************
      *  3) Glavni container (labirint + gumbi)
+     *     - poskrbimo, da gumbi ostanejo na desni
      ********************************************************/
     .container {
       position: relative;
       z-index: 1;
       width: 90%;
-      max-width: 600px;
+      max-width: 1200px; /* povečamo širino, da gumbi ostanejo desno */
       margin: 20px auto;
-      text-align: center;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: flex-start;
+      /* Ne želimo preloma vrstic => no-wrap */
+      flex-wrap: nowrap;
       background: rgba(0,0,0,0.2);
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.3);
       padding: 20px;
       transition: transform 0.2s;
+      gap: 20px;
     }
     .container:hover {
       transform: scale(1.03);
     }
 
-    /* Maze wrapper s SVG in canvas, odzivno */
+    /*
+     * 4) Maze wrapper + canvas
+     *    POVEČANO za 1.5 => 484 * 1.5 = 726
+     */
     #mazeWrapper {
-      position: relative; 
-      display: inline-block;
-      width: 100%;
-      max-width: 484px; /* da se ne napihne preveč */
+      position: relative;
+      flex: 0 0 726px; /* da se ne širi ali krči več, točno 726 */
+      width: 726px;
+      height: 726px;
+      overflow: hidden;
+      background: rgba(0,0,0,0.1);
     }
     #mazeWrapper svg {
-      width: 100%;
-      height: auto;
+      position: absolute;
+      top: 0; left: 0;
+      width: 726px; 
+      height: 726px;
       display: block;
     }
-    /* Canvas nad SVG */
     #drawCanvas {
       position: absolute;
       top: 0; left: 0;
-      width: 100%;
-      height: auto;
+      width: 726px;
+      height: 726px;
       z-index: 2;
       cursor: crosshair;
     }
 
+    /* Meteorite Image - 1.5× več od 10×10 => 15×15 */
+    #meteorite {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      z-index: 3;
+      pointer-events: none;
+    }
+
     /********************************************************
-     *  4) Gumbi
+     *  5) Gumbi (na desni)
      ********************************************************/
     .gumbi {
-      margin-top: 15px;
+      flex: 0 0 200px; /* fiksna širina, da ne skače */
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      background: rgba(0,0,0,0.3);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     }
-    .btn {
-      display: inline-block;
-      margin: 5px;
-      padding: 10px 20px;
+    .gumbi .btn {
+      margin: 10px 0;
+      padding: 12px 0;
       background-color: #28ca43;
       color: #fff;
       border: none;
       border-radius: 4px;
       cursor: pointer;
       transition: all 0.2s;
+      font-size: 1rem;
+      width: 100%;
+      box-sizing: border-box;
     }
-    .btn:hover {
+    .gumbi .btn:hover {
       background: #02551b;
-      transform: scale(1.05);
+      transform: scale(1.02);
     }
-    /* Gumb glasba */
     #btnMusic.on {
-      background-color: #db2777; /* roza? */
+      background-color: #db2777; 
     }
 
     /********************************************************
-     *  5) Rešitvena pot (solution-path) - animacija
+     *  6) Rešitvena pot (solution-path) - animacija
      ********************************************************/
     .solution-path {
       stroke-dasharray: 3000; 
@@ -168,22 +198,6 @@
     }
     .solution-path.draw {
       stroke-dashoffset: 0;
-    }
-
-    /********************************************************
-     *  6) Info (skrito polje)
-     ********************************************************/
-    .info-box {
-      display: none;
-      margin-top: 15px;
-      background: rgba(255,255,255,0.1);
-      padding: 10px;
-      border-radius: 5px;
-      animation: fadeIn 0.4s ease;
-    }
-    @keyframes fadeIn {
-      from {opacity: 0;}
-      to   {opacity: 1;}
     }
 
     /********************************************************
@@ -197,6 +211,9 @@
       margin-top: auto;
       z-index: 1;
     }
+
+    /* Za majhne zaslone lahko dodate media query, 
+       a zdaj je zahtevano, naj ostane gumbi na desni. */
   </style>
 </head>
 
@@ -208,28 +225,16 @@
   <div class="container">
     <div id="mazeWrapper">
       <!-- Tu se vstavi maze.svg s fetch() -->
-      <canvas id="drawCanvas" width="484" height="484"></canvas>
+      <canvas id="drawCanvas" width="726" height="726"></canvas>
+      <img id="meteorite" src="meteorite.png" alt="Meteorite" />
     </div>
 
     <div class="gumbi">
-      <button id="btnShow"   class="btn">Show Solution</button>
-      <button id="btnHide"   class="btn" style="display:none;">Hide Solution</button>
-      <button id="btnInfo"   class="btn">More Info</button>
-      <button id="btnClear"  class="btn">Clear Drawing</button>
-      <button id="btnMusic"  class="btn">Music On/Off</button>
-    </div>
-
-    <div id="infoBox" class="info-box">
-      <p><strong>Navodila:</strong></p>
-      <ul style="text-align:left;">
-        <li>Začni risati <em>v bližini</em> (234,8) (vhod) — sicer se črta ne bo začela.</li>
-        <li>Če se dotakneš stene: Game Over.</li>
-        <li>Če prideš do spodnje luknje (242..258, y=482): You Win!</li>
-      </ul>
-      <p>
-        Klikni “Show Solution” za rešitveno pot, “Hide Solution” za skrivanje, 
-        “Clear Drawing” za čiščenje narisanega.
-      </p>
+      <button id="btnShow" class="btn">Show Solution</button>
+      <button id="btnHide" class="btn" style="display:none;">Hide Solution</button>
+      <button id="btnInfo" class="btn">More Info</button>
+      <button id="btnReset" class="btn">Reset Labyrinth</button>
+      <button id="btnMusic" class="btn">Music On/Off</button>
     </div>
   </div>
 
@@ -237,218 +242,268 @@
     <p>&copy; 2025 Space Labyrinth</p>
   </div>
 
-  <!-- Glasba v ozadju (postaviš svojo .mp3 v mapo ali uporabiš spletni URL) -->
-  <audio id="bgMusic" src="SpaceMusic.mp3" loop preload="auto"></audio>
+  <!-- Glasba v ozadju -->
+  <audio id="bgMusic" src="VVS.mp3" loop preload="auto"></audio>
 
   <script>
-    /****************************************************
-     * (A) Naložimo maze.svg in stene
-     ****************************************************/
-    let walls = [];
-    fetch("maze.svg")
-      .then(res => res.text())
-      .then(svgData => {
-        const mazeWrapper = document.getElementById("mazeWrapper");
-        mazeWrapper.insertAdjacentHTML("afterbegin", svgData);
+    document.addEventListener("DOMContentLoaded", () => {
+      /****************************************************
+       * (A) SCALE = 1.5
+       ****************************************************/
+      const scale = 1.5; 
+      const ORIG_SIZE = 484;
+      const NEW_SIZE  = ORIG_SIZE * scale; // 726
 
-        const svgEl = mazeWrapper.querySelector("svg");
-        const lineElems = svgEl.querySelectorAll("line");
-        lineElems.forEach(ln => {
-          let x1 = parseFloat(ln.getAttribute("x1"));
-          let y1 = parseFloat(ln.getAttribute("y1"));
-          let x2 = parseFloat(ln.getAttribute("x2"));
-          let y2 = parseFloat(ln.getAttribute("y2"));
-          walls.push({x1,y1,x2,y2});
+      /****************************************************
+       * (B) Naložimo maze.svg in stene (scaled)
+       ****************************************************/
+      let walls = [];
+      fetch("maze.svg")
+        .then(res => res.text())
+        .then(svgData => {
+          const mazeWrapper = document.getElementById("mazeWrapper");
+          mazeWrapper.insertAdjacentHTML("afterbegin", svgData);
+
+          const svgEl = mazeWrapper.querySelector("svg");
+          svgEl.setAttribute("viewBox", `0 0 ${ORIG_SIZE} ${ORIG_SIZE}`);
+          // Dimenzije v CSS => 726x726; Koordinate ostanejo 0..484 v viewBox
+
+          // Vsak line x1,y1,x2,y2 pomnožimo s scale => walls
+          const lineElems = svgEl.querySelectorAll("line");
+          lineElems.forEach(ln => {
+            let x1 = parseFloat(ln.getAttribute("x1"));
+            let y1 = parseFloat(ln.getAttribute("y1"));
+            let x2 = parseFloat(ln.getAttribute("x2"));
+            let y2 = parseFloat(ln.getAttribute("y2"));
+            walls.push({
+              x1: x1 * scale,
+              y1: y1 * scale,
+              x2: x2 * scale,
+              y2: y2 * scale
+            });
+          });
+        })
+        .catch(err => console.error("Napaka pri nalaganju SVG:", err));
+
+      /****************************************************
+       * (C) Gumbi: Show/Hide, More Info (SweetAlert),
+       *     Reset, Music
+       ****************************************************/
+      const btnShow   = document.getElementById("btnShow");
+      const btnHide   = document.getElementById("btnHide");
+      const btnInfo   = document.getElementById("btnInfo");
+      const btnReset  = document.getElementById("btnReset");
+      const btnMusic  = document.getElementById("btnMusic");
+      const bgMusic   = document.getElementById("bgMusic");
+
+      // Show/Hide rešitve
+      btnShow.addEventListener("click", () => {
+        const solPath = document.querySelector(".solution-path");
+        if (solPath) solPath.classList.add("draw");
+        btnShow.style.display="none";
+        btnHide.style.display="inline-block";
+      });
+      btnHide.addEventListener("click", () => {
+        const solPath = document.querySelector(".solution-path");
+        if (solPath) solPath.classList.remove("draw");
+        btnHide.style.display="none";
+        btnShow.style.display="inline-block";
+      });
+
+      // More Info => SweetAlert
+      btnInfo.addEventListener("click", () => {
+        Swal.fire({
+          icon: "info",
+          title: "How to Play",
+          html: `
+            <ul style="text-align:left;">
+              <li>Pomikaj meteorite s tipkami W, A, S, D.</li>
+              <li>Pazi na stene: če se jih dotakneš, sledi Game Over.</li>
+              <li>Rešitev lahko prikažeš z gumbom "Show Solution".</li>
+              <li>Izhod je spodaj, pri (242..258, y=482) - zdaj povečano.</li>
+            </ul>
+            <p>Uživaj v igri!</p>
+          `,
+          confirmButtonText: "Zapri"
         });
-      })
-      .catch(err => console.error("Napaka pri nalaganju SVG:", err));
+      });
 
-    /****************************************************
-     * (B) Gumbi: Show/Hide, Info, Clear, Music
-     ****************************************************/
-    const btnShow   = document.getElementById("btnShow");
-    const btnHide   = document.getElementById("btnHide");
-    const btnInfo   = document.getElementById("btnInfo");
-    const btnClear  = document.getElementById("btnClear");
-    const btnMusic  = document.getElementById("btnMusic");
-    const infoBox   = document.getElementById("infoBox");
-    const bgMusic   = document.getElementById("bgMusic");
+      // Reset Labyrinth => pokličemo resetAll()
+      btnReset.addEventListener("click", () => {
+        resetAll();
+      });
 
-    // Show/Hide rešitve
-    btnShow.addEventListener("click", () => {
-      const solPath = document.querySelector(".solution-path");
-      if (solPath) solPath.classList.add("draw");
-      btnShow.style.display="none";
-      btnHide.style.display="inline-block";
-    });
-    btnHide.addEventListener("click", () => {
-      const solPath = document.querySelector(".solution-path");
-      if (solPath) solPath.classList.remove("draw");
-      btnHide.style.display="none";
-      btnShow.style.display="inline-block";
-    });
-
-    // Info
-    let infoVisible=false;
-    btnInfo.addEventListener("click", () => {
-      infoVisible=!infoVisible;
-      infoBox.style.display=infoVisible?"block":"none";
-      btnInfo.textContent=infoVisible?"Hide Info":"More Info";
-    });
-
-    // Clear
-    btnClear.addEventListener("click", () => {
-      ctx.clearRect(0,0, drawCanvas.width, drawCanvas.height);
-      drawingStarted=false;
-    });
-
-    // Glasba On/Off
-    let musicOn=false;
-    btnMusic.addEventListener("click", () => {
-      musicOn=!musicOn;
-      if (musicOn) {
-        bgMusic.play();
-        btnMusic.classList.add("on");
-      } else {
-        bgMusic.pause();
-        btnMusic.classList.remove("on");
-      }
-    });
-
-    /****************************************************
-     * (C) Risanje s miško: samo če začnemo pri (234,8)
-     ****************************************************/
-    const drawCanvas=document.getElementById("drawCanvas");
-    const ctx=drawCanvas.getContext("2d");
-
-    // Lepša modra črta + sijaj
-    ctx.strokeStyle="#00aeff";
-    ctx.lineWidth=4;
-    ctx.lineCap="round";
-    ctx.shadowColor="#0cf";
-    ctx.shadowBlur=10;
-
-    let isDrawing=false;
-    let drawingStarted=false; // ali smo že “legalno” začeli pri vhodu?
-    let lastX=234, lastY=8;
-    const startX=234, startY=8;
-    const threshold=20; // polmer za “bližino” starta
-
-    // Mousedown -> poskus začetka ali nadaljevanja
-    drawCanvas.addEventListener("mousedown", (ev) => {
-      const [mx,my]=getMousePos(ev);
-      if (!drawingStarted) {
-        let dx=mx - startX, dy=my - startY;
-        let dist2=dx*dx + dy*dy;
-        if (dist2 <= threshold*threshold) {
-          // Dovolj blizu vhoda => začnemo
-          drawingStarted=true;
-          isDrawing=true;
-          lastX=mx; lastY=my;
+      // Glasba On/Off
+      let musicOn=false;
+      btnMusic.addEventListener("click", () => {
+        musicOn=!musicOn;
+        if (musicOn) {
+          bgMusic.play().then(()=>{
+            btnMusic.classList.add("on");
+            btnMusic.textContent = "Music Off";
+          }).catch(err=>{
+            console.log("Music play error:", err);
+            alert("Could not play music automatically. Unmute tab or allow audio!");
+          });
         } else {
-          // predaleč
-          isDrawing=false;
+          bgMusic.pause();
+          btnMusic.classList.remove("on");
+          btnMusic.textContent = "Music On";
         }
-      } else {
-        // Že imamo risanje
-        isDrawing=true;
-        lastX=mx; lastY=my;
+      });
+
+      /****************************************************
+       * (D) Meteorit: gladko premikanje + risanje sledi
+       ****************************************************/
+      const meteoriteImg = document.getElementById("meteorite");
+      const drawCanvas   = document.getElementById("drawCanvas");
+      const ctx          = drawCanvas.getContext("2d");
+
+      // Ker je meteorit 15×15, polmer ~7.5 => vzamemo 8
+      const METEOR_RADIUS = 8;
+
+      // Začetna pozicija => (234,30)*scale => (351,45)
+      let meteoritePos = { x: 234*scale, y: 5*scale };
+
+      // Hitrost => 2 -> 2*1.5 = 3
+      let vx = 0, vy = 0;
+      const SPEED = 3;
+
+      // Risanje sledi
+      let lastX = meteoritePos.x;
+      let lastY = meteoritePos.y;
+
+      function updateMeteoritePosition() {
+        // sledi (črta)
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(meteoritePos.x, meteoritePos.y);
+        ctx.strokeStyle = "yellow";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        lastX = meteoritePos.x;
+        lastY = meteoritePos.y;
+
+        // Posodobimo slog meteorita
+        meteoriteImg.style.left = (meteoritePos.x - METEOR_RADIUS) + "px";
+        meteoriteImg.style.top  = (meteoritePos.y - METEOR_RADIUS) + "px";
       }
-    });
 
-    // Mousemove -> če rišemo, narišemo in preverimo stene/izhod
-    drawCanvas.addEventListener("mousemove", (ev) => {
-      if (!isDrawing) return;
-      const [nx,ny]=getMousePos(ev);
-
-      // 1) narišemo segment
-      ctx.beginPath();
-      ctx.moveTo(lastX,lastY);
-      ctx.lineTo(nx,ny);
-      ctx.stroke();
-
-      // 2) preverimo, ali seka katero steno => gameOver
-      if (lineHitsWall(lastX,lastY,nx,ny)) {
-        gameOver();
-        return;
-      }
-      // 3) preverimo izhod (242..258, y=482)
-      if (lineSegmentsIntersect(lastX,lastY,nx,ny, 242,482, 258,482)) {
-        youWin();
-        return;
-      }
-
-      lastX=nx; 
-      lastY=ny;
-    });
-    drawCanvas.addEventListener("mouseup",   ()=>{isDrawing=false;});
-    drawCanvas.addEventListener("mouseleave",()=>{isDrawing=false;});
-
-    // Transform mouse => (0..484)
-    function getMousePos(e) {
-      const rect=drawCanvas.getBoundingClientRect();
-      const scx=drawCanvas.width/rect.width;
-      const scy=drawCanvas.height/rect.height;
-      const x=(e.clientX-rect.left)*scx;
-      const y=(e.clientY-rect.top)*scy;
-      return [x,y];
-    }
-
-    /****************************************************
-     * (D) lineHitsWall => true, če segment seka katero steno
-     ****************************************************/
-    function lineHitsWall(x1,y1,x2,y2) {
-      for (let w of walls) {
-        if (lineSegmentsIntersect(x1,y1,x2,y2, w.x1,w.y1,w.x2,w.y2)) {
-          return true;
+      // Kolizije
+      function lineCircleCollides(x1, y1, x2, y2, cx, cy, r){
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const lengthSq = dx * dx + dy * dy;
+        if(lengthSq === 0){
+          return Math.hypot(cx - x1, cy - y1) <= r;
         }
+        const t = ((cx - x1) * dx + (cy - y1) * dy) / lengthSq;
+        const tClamped = Math.max(0, Math.min(1, t));
+        const closestX = x1 + tClamped * dx;
+        const closestY = y1 + tClamped * dy;
+        const distanceSq = (closestX - cx) ** 2 + (closestY - cy) ** 2;
+        return distanceSq <= r * r;
       }
-      return false;
-    }
 
-    // lineSegmentsIntersect => klasičen “orientation” test
-    function lineSegmentsIntersect(ax,ay,bx,by, cx,cy,dx,dy) {
-      function orientation(px,py, qx,qy, rx,ry) {
-        let val=(qy-py)*(rx-qx)-(qx-px)*(ry-qy);
-        if(val===0)return 0;return (val>0?1:2);
+      function canMoveTo(newX, newY){
+        // Meja = 726
+        if(newX < 0 || newX > NEW_SIZE || newY < 0 || newY > NEW_SIZE){
+          return false;
+        }
+        // Preverimo stene
+        for(let w of walls){
+          if(lineCircleCollides(w.x1, w.y1, w.x2, w.y2, newX, newY, METEOR_RADIUS)){
+            return false;
+          }
+        }
+        // Izhod => (242..258, y=482)*1.5 => (363..387, y=723)
+        if(newY >= 723 && newX >= 363 && newX <= 387){
+          youWin();
+          return false;
+        }
+        return true;
       }
-      function onSegment(px,py,qx,qy,rx,ry){
-        return(Math.min(px,rx)<=qx&&qx<=Math.max(px,rx)&&
-               Math.min(py,ry)<=qy&&qy<=Math.max(py,ry));
-      }
-      const o1=orientation(ax,ay,bx,by,cx,cy), o2=orientation(ax,ay,bx,by,dx,dy);
-      const o3=orientation(cx,cy,dx,dy,ax,ay), o4=orientation(cx,cy,dx,dy,bx,by);
-      if(o1!==o2&&o3!==o4)return true;
-      if(o1===0&&onSegment(ax,ay,cx,cy,bx,by))return true;
-      if(o2===0&&onSegment(ax,ay,dx,dy,bx,by))return true;
-      if(o3===0&&onSegment(cx,cy,ax,ay,dx,dy))return true;
-      if(o4===0&&onSegment(cx,cy,bx,by,dx,dy))return true;
-      return false;
-    }
 
-    /****************************************************
-     * (E) gameOver / youWin + reset
-     ****************************************************/
-    function gameOver() {
-      Swal.fire({
-        icon:"error",
-        title:"Game Over",
-        text:"Zadeli ste steno labirinta!",
-        confirmButtonText:"Ok"
-      }).then(()=>resetDrawing());
-    }
-    function youWin() {
-      Swal.fire({
-        icon:"success",
-        title:"You Win!",
-        text:"Uspešno ste prišli do izhoda labirinta!",
-        confirmButtonText:"Super"
-      }).then(()=>resetDrawing());
-    }
-    function resetDrawing() {
-      ctx.clearRect(0,0, drawCanvas.width, drawCanvas.height);
-      drawingStarted=false;
-    }
+      function gameLoop(){
+        if(vx !== 0 || vy !== 0){
+          let newX = meteoritePos.x + vx;
+          let newY = meteoritePos.y + vy;
+          if(canMoveTo(newX, newY)){
+            meteoritePos.x = newX;
+            meteoritePos.y = newY;
+            updateMeteoritePosition();
+          } else {
+            // če želite takoj gameOver, odkomentirajte:
+            // gameOver();
+          }
+        }
+        requestAnimationFrame(gameLoop);
+      }
+      requestAnimationFrame(gameLoop);
+
+      // Tipke (W,A,S,D)
+      let keysPressed = {};
+      document.addEventListener("keydown", (e) => {
+        const key = e.key.toLowerCase();
+        if(["w","a","s","d"].includes(key)){
+          keysPressed[key] = true;
+          e.preventDefault();
+        }
+        updateVelocity();
+      });
+      document.addEventListener("keyup", (e) => {
+        const key = e.key.toLowerCase();
+        if(keysPressed[key]){
+          keysPressed[key] = false;
+          e.preventDefault();
+        }
+        updateVelocity();
+      });
+
+      function updateVelocity(){
+        vx = 0; 
+        vy = 0;
+        if(keysPressed["w"]) vy = -SPEED;
+        if(keysPressed["s"]) vy =  SPEED;
+        if(keysPressed["a"]) vx = -SPEED;
+        if(keysPressed["d"]) vx =  SPEED;
+      }
+
+      /****************************************************
+       * (E) gameOver / youWin + resetAll
+       ****************************************************/
+      function gameOver() {
+        Swal.fire({
+          icon:"error",
+          title:"Game Over",
+          text:"Zadeli ste steno labirinta!",
+          confirmButtonText:"Ok"
+        }).then(()=>resetAll());
+      }
+      function youWin() {
+        Swal.fire({
+          icon:"success",
+          title:"You Win!",
+          text:"Uspešno ste prišli do izhoda labirinta!",
+          confirmButtonText:"Super"
+        }).then(()=>resetAll());
+      }
+      function resetAll() {
+        // Po resetu pobrišemo črte
+        ctx.clearRect(0,0, drawCanvas.width, drawCanvas.height);
+        // Ponastavimo pozicijo meteorita => (234,30)*1.5 => (351,45)
+        meteoritePos = { x: 234*scale, y: 5*scale };
+        lastX = meteoritePos.x;
+        lastY = meteoritePos.y;
+        vx = 0;
+        vy = 0;
+        updateMeteoritePosition();
+      }
+
+      // Inicialni prikaz
+      updateMeteoritePosition();
+    });
   </script>
 </body>
 </html>
