@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=580, initial-scale=1.0" />
+  <!-- Opomba: Ker želimo fiksno širino labirinta, lahko v meta viewport nastavite width=580, če to ustreza vašim potrebam -->
+  
+  <!-- Glavni CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Favicon -->
+  <link rel="icon" href="raketaFavIcon.ico" type="image/x-icon" />
+
+  <title>Space Labyrinth</title>
+
+  <!-- Google Font: Orbitron -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet" />
+
+  <!-- SweetAlert2 (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+  <!-- Glava z naslovom -->
+  <div class="glava">
+    <h1>Explore the Space Labyrinth</h1>
+  </div>
+
+  <!-- Glavni container: labirint + sidebar (gumbi + vesoljček) -->
+  <div class="container">
+    <div id="mazeWrapper">
+      <canvas id="drawCanvas" width="580" height="580"></canvas>
+      <img id="meteorite" src="meteorite.png" alt="Meteorite" />
+    </div>
+
+    <!-- Sidebar: gumbi + vesoljček -->
+    <div class="sidebar">
+      <div class="gumbi">
+        <button id="btnShow" class="btn">Show Solution</button>
+        <button id="btnHide" class="btn" style="display:none;">Hide Solution</button>
+        <button id="btnInfo" class="btn">More Info</button>
+        <button id="btnReset" class="btn">Reset Labyrinth</button>
+        <!-- Spustni seznam je vedno prikazan -->
+        <select id="musicSelector">
+          <option value="">-- Choose a song --</option>
+          <option value="VVS.mp3">VVS</option>
+          <option value="Ccokolada.mp3">Ccokolada</option>
+          <option value="Forza.mp3">Forza</option>
+          <option value="Kavali.mp3">Kavali</option>
+          <option value="Djurdjevdan.mp3">Djurdjevdan</option>
+        </select>
+        <!-- Gumb za preklop predvajanja/ustavljanja glasbe -->
+        <button id="toggleMusic" class="btn" style="display:none;">Stop Music</button>
+      </div>
+
+      <!-- Slika vesoljčka -->
+      <img id="alien" src="alien.png" alt="Cool alien" />
+    </div>
+  </div>
+
+  <!-- Noga -->
+  <div class="noga">
+    <p>&copy; 2025 Space Labyrinth</p>
+  </div>
+
+  <!-- Glasba v ozadju -->
+  <audio id="bgMusic" src="VVS.mp3" loop preload="auto"></audio>
+
+  <!-- Glavni JS -->
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+/*****************************************
+ * Vsa pisava = Orbitron
+ *****************************************/
+ html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  height: 100%;
+  font-family: 'Orbitron', sans-serif;
+  color: #fff;
+}
+/* Tudi SweetAlert: */
+.swal2-popup {
+  font-family: 'Orbitron', sans-serif !important;
+}
+.swal2-popup button {
+  font-family: 'Orbitron', sans-serif !important;
+}
+
+/*****************************************
+ * Ozadje z animiranim gradientom
+ *****************************************/
+body {
+  background: linear-gradient(120deg, #4c7b9e, #0d4b8d, #002046);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  overflow-x: hidden;
+}
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/*****************************************
+ * Zvezdice
+ *****************************************/
+body::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(3px 3px at 40px 40px, #fff, transparent 80%) repeat,
+    radial-gradient(3px 3px at 100px 100px, #fff, transparent 80%) repeat;
+  background-size: 120px 120px;
+  opacity: 0.3;
+  animation: starDrift 40s linear infinite;
+}
+@keyframes starDrift {
+  100% { background-position: -1200px -1200px; }
+}
+
+/*****************************************
+ * Zaglavje
+ *****************************************/
+.glava {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  text-align: center;
+  padding: 20px;
+  background: rgba(0,0,0,0.2);
+}
+.glava h1 {
+  margin: 0;
+  font-size: 2.2rem;
+  text-shadow:
+    0 0 5px rgba(255,255,255,0.6),
+    0 0 10px rgba(255,255,255,0.4),
+    0 0 20px rgba(255,255,255,0.2);
+}
+
+/*****************************************
+ * Glavni container (labirint + sidebar)
+ *****************************************/
+.container {
+  position: relative;
+  z-index: 1;
+  /* Če želite, lahko container ohranite odziven, vendar bo labirint sam fiksne dimenzije */
+  width: 90%;
+  max-width: 900px;
+  margin: 20px auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  padding: 20px;
+  gap: 20px;
+  /* Odstranimo transform: scale, če povzročajo neželen efekt */
+}
+
+/*****************************************
+ * Maze (580 × 580) – Fiksna velikost
+ *****************************************/
+#mazeWrapper {
+  position: relative;
+  flex: 0 0 580px;
+  width: 580px;
+  height: 580px;
+  max-width: 580px;
+  max-height: 580px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.1);
+}
+#mazeWrapper svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 580px;
+  height: 580px;
+  display: block;
+}
+#drawCanvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 580px;
+  height: 580px;
+  max-width: 580px;
+  max-height: 580px;
+  z-index: 2;
+  cursor: crosshair;
+}
+#meteorite {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/*****************************************
+ * Sidebar (gumbi + vesoljček)
+ *****************************************/
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Gumbi */
+.gumbi {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: rgba(0,0,0,0.3);
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  width: 170px;
+}
+.gumbi .btn {
+  margin: 8px 0;
+  padding: 10px 0;
+  background-color: #28ca43;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Orbitron', sans-serif !important;
+  font-size: 0.95rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+.gumbi .btn:hover {
+  background: #02551b;
+  transform: scale(1.02);
+}
+
+/* Stilizacija spustnega seznama, da ustreza gumbom */
+.gumbi select {
+  margin: 8px 0;
+  padding: 10px 0;
+  background-color: #28ca43;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.95rem;
+  width: 100%;
+  box-sizing: border-box;
+  appearance: none;
+}
+.gumbi select:hover {
+  background: #02551b;
+  transform: scale(1.02);
+}
+
+/* Vesoljček */
+#alien {
+  width: 170px;
+  height: auto;
+  object-fit: cover;
+}
+
+/*****************************************
+ * Rešitvena pot
+ *****************************************/
+.solution-path {
+  stroke-dasharray: 3000;
+  stroke-dashoffset: 3000;
+  transition: stroke-dashoffset 3s linear;
+  filter: drop-shadow(0 0 8px lime);
+}
+.solution-path.draw {
+  stroke-dashoffset: 0;
+}
+
+/*****************************************
+ * Footer
+ *****************************************/
+.noga {
+  width: 100%;
+  text-align: center;
+  background: rgba(0,0,0,0.2);
+  padding: 10px;
+  font-size: 0.85rem;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+}
+
+/*****************************************
+ * Responsive adjustments
+ *****************************************/
+/* Pri manjših zaslonih prilagodimo postavitev containerja in sidebar-a,
+   vendar ohranimo fiksno velikost labirinta */
+@media (max-width: 700px) {
+  .container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .sidebar {
+    width: 100%;
+    max-width: 580px;
+  }
+}
